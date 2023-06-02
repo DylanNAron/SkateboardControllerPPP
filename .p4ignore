@@ -1,0 +1,72 @@
+###########################################################
+##################Unreal p4Ignore##########################
+###########################################################
+# Ignore project files in the root
+*.sln
+!*\*.sln
+.vs
+*.suo
+*.opensdf
+*.sdf
+*.pdb
+*-Debug.*
+*.xcodeproj
+.\Makefile
+.\CMakeLists.txt
+.\.ue4dependencies
+
+ipch\*
+
+# User-specific folders or temporary files that should not be versioned.
+Saved/
+Intermediate/
+DerivedDataCache/
+FileOpenOrder/
+obj/
+
+# Derived data cache should never be checked in
+Engine\DerivedDataCache\*
+
+# Engine intermediates
+Engine\Intermediate\*
+Engine\Plugins\*\Intermediate\*
+
+# Intermediate folders created for various C# programs
+Engine\Source\Programs\*\obj\*
+
+# Saved folders for programs should not be checked in
+Engine\Programs\*\Saved\*
+Engine\Programs\UnrealBuildTool\*
+
+# Intermediate folders for programs should not be checked in
+Engine\Programs\*\Intermediate\*
+
+# Ignore any saved local files
+Engine\Saved\*
+
+# Ignore any build receipts
+Engine\Build\Receipts\*
+
+# Ignore Unix backup files
+*~
+
+# Ignore Mac desktop services store files 
+.DS_Store
+
+# Ignore crash reports
+crashinfo--*
+
+# Ignore linux project files
+*.user
+*.pro
+*.pri
+*.kdev4
+
+# Ignore project-specific files
+MyProject\Binaries\*.pdb
+MyProject\Binaries\*-Shipping.*
+MyProject\Build\Receipts\*
+MyProject\DerivedDataCache\*
+MyProject\Intermediate\*
+MyProject\Saved\*
+MyProject\*.sln
