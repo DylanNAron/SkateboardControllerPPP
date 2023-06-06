@@ -49,14 +49,18 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	FHitResult SurfaceHit;
 	if (GetSkateSurface(SurfaceHit))
 	{
-		//Maybe fall if no skate surface
+		//Aerial
 	}
 
-	//Surface Grav
+	//Slope Forces
 	Velocity += SkateGravityForce * FVector::DownVector * deltaTime;
 
-	//Strafe
-	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .5)
+	//Velocity only in forward/backward direction
+	Velocity.X = UpdatedComponent->GetForwardVector().X * FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
+	Velocity.Y = UpdatedComponent->GetForwardVector().Y * FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
+
+	//Turn
+	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .1)
 	{
 		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
 	}
@@ -81,7 +85,9 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
 	FVector VelPlaneDir = FVector::VectorPlaneProject(Velocity, SurfaceHit.Normal).GetSafeNormal();
-	FQuat NewRotation = FRotationMatrix::MakeFromXZ(VelPlaneDir, SurfaceHit.Normal).ToQuat();
+	
+	FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
+	FQuat NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();
 
 	//THIS ACTUALLY DOES THE MOVE
 	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);
@@ -95,7 +101,7 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	FHitResult NewSurfaceHit;
 	if (!GetSkateSurface(NewSurfaceHit))
 	{
-		//Maybe fall if no skate surface
+		//Aerial
 	}
 
 	if (!bJustTeleported && !HasAnimRootMotion() && !CurrentRootMotion.HasOverrideVelocity())

@@ -27,6 +27,7 @@ class PPPSKATEBOARD_API USkateCharacterMovementComponent : public UCharacterMove
 	//Parameters
 	UPROPERTY(EditDefaultsOnly) float SkateGravityForce = 4000.f;
 	UPROPERTY(EditDefaultsOnly) float SkateFriction = 1.5f;
+	UPROPERTY(EditDefaultsOnly) float SkateFloorAlignmentTime = .5f;
 
 	// Transient
 	UPROPERTY(Transient) ASkateCharacter* SkateCharacterOwner;
