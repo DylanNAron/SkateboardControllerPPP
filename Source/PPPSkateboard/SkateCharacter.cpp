@@ -119,15 +119,25 @@ void ASkateCharacter::Move(const FInputActionValue& Value)
 
 	if (Controller != nullptr)
 	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		FVector ForwardDirection;
+		FVector RightDirection;
 
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		if (GetCharacterMovement()->MovementMode == MOVE_Custom)
+		{
+			//Skate Controlling based on camera position
+			ForwardDirection = FollowCamera->GetForwardVector();
+			RightDirection = FollowCamera->GetRightVector();
+		}
+		else
+		{
+			//Biped Controlling
+			// find out which way is forward based on controller rotation
+			const FRotator Rotation = Controller->GetControlRotation();
+			const FRotator YawRotation(0, Rotation.Yaw, 0);
+			ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+			RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+		}
 
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);

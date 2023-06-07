@@ -43,17 +43,20 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	{
 		return;
 	}
-
 	RestorePreAdditiveRootMotionVelocity();
 
+	//Adjust Velocity based on slope or if aerial
 	FHitResult SurfaceHit;
 	if (GetSkateSurface(SurfaceHit))
 	{
-		//Aerial
+		FVector SlopeForce = SurfaceHit.Normal;
+		SlopeForce.Z *= -1;
+		Velocity += SkateGravityForce * SlopeForce * deltaTime;
 	}
-
-	//Slope Forces
-	Velocity += SkateGravityForce * FVector::DownVector * deltaTime;
+	else
+	{
+		Velocity += AerialGravityForce * FVector::DownVector * deltaTime;
+	}
 
 	//Velocity only in forward/backward direction
 	Velocity.X = UpdatedComponent->GetForwardVector().X * FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
@@ -79,15 +82,18 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	//Perform Actual Movement!!
 	Iterations++;
 	bJustTeleported = false;
-
 	FVector OldLocation = UpdatedComponent->GetComponentLocation();
-	FQuat OldRotation = UpdatedComponent->GetComponentRotation().Quaternion();
 	FHitResult Hit(1.f);
 	FVector Adjusted = Velocity * deltaTime;
-	FVector VelPlaneDir = FVector::VectorPlaneProject(Velocity, SurfaceHit.Normal).GetSafeNormal();
 	
-	FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
-	FQuat NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();
+	//Rotate player to slope if grounded
+	FQuat NewRotation = UpdatedComponent->GetComponentRotation().Quaternion();
+	if (GetSkateSurface(SurfaceHit))
+	{
+		//Rotating here messes up constraining velocity
+		/*FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
+		NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();*/
+	}
 
 	//THIS ACTUALLY DOES THE MOVE
 	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);
@@ -114,7 +120,7 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 bool USkateCharacterMovementComponent::GetSkateSurface(FHitResult& Hit) const
 {
 	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.5f * FVector::DownVector;
+	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f * FVector::DownVector;
 	FName ProfileName = TEXT("BlockAll");
 
 	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, SkateCharacterOwner->GetIgnoreCharacterParams());
