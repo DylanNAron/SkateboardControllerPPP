@@ -60,9 +60,17 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 		Velocity += AerialGravityForce * FVector::DownVector * deltaTime;
 	}
 
-	//Velocity only in forward/backward direction
-	Velocity.X = UpdatedComponent->GetForwardVector().X * FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
-	Velocity.Y = UpdatedComponent->GetForwardVector().Y * FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
+	//Turn to local coordinates because we are rotating the skater
+	double localForwardVelocity = FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
+	double localUpVelocity = FVector::DotProduct(UpdatedComponent->GetUpVector(), Velocity);
+	double localRightVelocity = FVector::DotProduct(UpdatedComponent->GetRightVector(), Velocity);
+
+	//constrain to only moving forward/backward (with a little bit of sliding based on SidewaysWheelSlide value)
+	localRightVelocity *= SidewaysWheelSlide;
+
+	//convert to global for velocity
+	Velocity = localForwardVelocity * UpdatedComponent->GetForwardVector() + localUpVelocity * UpdatedComponent->GetUpVector() + localRightVelocity * UpdatedComponent->GetRightVector();
+
 
 	//Turn
 	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .1)
@@ -93,8 +101,8 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	if (GetSkateSurface(SurfaceHit))
 	{
 		//Rotating here messes up constraining velocity
-		/*FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
-		NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();*/
+		FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
+		NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();
 	}
 
 
