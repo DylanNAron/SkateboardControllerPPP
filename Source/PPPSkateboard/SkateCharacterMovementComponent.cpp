@@ -52,9 +52,11 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 		FVector SlopeForce = SurfaceHit.Normal;
 		SlopeForce.Z *= -1;
 		Velocity += SkateGravityForce * SlopeForce * deltaTime;
+		isAerial = true;
 	}
 	else
 	{
+		isAerial = false;
 		Velocity += AerialGravityForce * FVector::DownVector * deltaTime;
 	}
 
@@ -94,6 +96,7 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 		/*FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
 		NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();*/
 	}
+
 
 	//THIS ACTUALLY DOES THE MOVE
 	SafeMoveUpdatedComponent(Adjusted, NewRotation, true, Hit);

@@ -25,10 +25,10 @@ class PPPSKATEBOARD_API USkateCharacterMovementComponent : public UCharacterMove
 	GENERATED_BODY()
 
 	//Parameters
-	UPROPERTY(EditDefaultsOnly) float SkateGravityForce = 4000.f;
-	UPROPERTY(EditDefaultsOnly) float AerialGravityForce = 4000.f;
-	UPROPERTY(EditDefaultsOnly) float SkateFriction = 1.5f;
-	UPROPERTY(EditDefaultsOnly) float SkateFloorAlignmentTime = .5f;
+	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateGravityForce = 4000.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Skating") float AerialGravityForce = 4000.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateFriction = 1.5f;
+	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateFloorAlignmentTime = .5f;
 
 	// Transient
 	UPROPERTY(Transient) ASkateCharacter* SkateCharacterOwner;
@@ -46,5 +46,9 @@ protected:
 private:
 	void PhysSkate(float deltaTime, int32 Iterations);
 	bool GetSkateSurface(FHitResult& Hit) const;
+
+public:
+
+	UPROPERTY(BlueprintReadOnly, Category = "Skating") bool isAerial{false};
 	
 };
