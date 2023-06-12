@@ -36,6 +36,10 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 		class UInputAction* LookAction;
 
+	//Params
+	UPROPERTY(EditDefaultsOnly, Category = "SkaterSettings") float HorizontalSpinSpeed = 10.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkaterSettings", meta = (AllowPrivateAccess = "true")) float HorizontalSpinMomentum = 0.f;
+
 public:
 	// Sets default values for this character's properties
 	ASkateCharacter(const FObjectInitializer& ObjectInitializer);
@@ -49,6 +53,7 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	void Spin(const FVector2D& input);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;

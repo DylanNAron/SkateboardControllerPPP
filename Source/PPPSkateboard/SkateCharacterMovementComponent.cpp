@@ -49,37 +49,48 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	FHitResult SurfaceHit;
 	if (GetSkateSurface(SurfaceHit))
 	{
+		isAerial = false;
+
 		FVector SlopeForce = SurfaceHit.Normal;
 		SlopeForce.Z *= -1;
 		Velocity += SkateGravityForce * SlopeForce * deltaTime;
-		isAerial = true;
+
+		//turning
+		if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .1)
+		{
+			Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
+		}
+		else
+		{
+			Acceleration = FVector::ZeroVector;
+		}
 	}
 	else
 	{
-		isAerial = false;
+		isAerial = true;
+
+		//Turning not possible mid air
+		Acceleration = FVector::ZeroVector;
+
+		//gravity
 		Velocity += AerialGravityForce * FVector::DownVector * deltaTime;
 	}
 
-	//Turn to local coordinates because we are rotating the skater
-	double localForwardVelocity = FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
-	double localUpVelocity = FVector::DotProduct(UpdatedComponent->GetUpVector(), Velocity);
-	double localRightVelocity = FVector::DotProduct(UpdatedComponent->GetRightVector(), Velocity);
 
-	//constrain to only moving forward/backward (with a little bit of sliding based on SidewaysWheelSlide value)
-	localRightVelocity *= SidewaysWheelSlide;
-
-	//convert to global for velocity
-	Velocity = localForwardVelocity * UpdatedComponent->GetForwardVector() + localUpVelocity * UpdatedComponent->GetUpVector() + localRightVelocity * UpdatedComponent->GetRightVector();
-
-
-	//Turn
-	if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .1)
+	if (!isAerial)
 	{
-		Acceleration = Acceleration.ProjectOnTo(UpdatedComponent->GetRightVector());
-	}
-	else
-	{
-		Acceleration = FVector::ZeroVector;
+
+		//Turn to local coordinates because we are rotating the skater
+		double localForwardVelocity = FVector::DotProduct(UpdatedComponent->GetForwardVector(), Velocity);
+		double localUpVelocity = FVector::DotProduct(UpdatedComponent->GetUpVector(), Velocity);
+		double localRightVelocity = FVector::DotProduct(UpdatedComponent->GetRightVector(), Velocity);
+
+		//constrain to only moving forward/backward (with a little bit of sliding based on SidewaysWheelSlide value)
+		localRightVelocity *= SidewaysWheelSlide;
+
+		//convert to global for velocity
+		Velocity = localForwardVelocity * UpdatedComponent->GetForwardVector() + localUpVelocity * UpdatedComponent->GetUpVector() + localRightVelocity * UpdatedComponent->GetRightVector();
+
 	}
 
 	//Calculating Velocity

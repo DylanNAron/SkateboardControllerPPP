@@ -128,6 +128,10 @@ void ASkateCharacter::Move(const FInputActionValue& Value)
 			//Skate Controlling based on camera position
 			ForwardDirection = FollowCamera->GetForwardVector();
 			RightDirection = FollowCamera->GetRightVector();
+
+			//Skate spinning
+			Spin(MovementVector);
+
 		}
 		else
 		{
@@ -142,6 +146,8 @@ void ASkateCharacter::Move(const FInputActionValue& Value)
 		// add movement 
 		AddMovementInput(ForwardDirection, MovementVector.Y);
 		AddMovementInput(RightDirection, MovementVector.X);
+
+
 	}
 }
 
@@ -155,5 +161,18 @@ void ASkateCharacter::Look(const FInputActionValue& Value)
 		// add yaw and pitch input to controller
 		AddControllerYawInput(LookAxisVector.X);
 		AddControllerPitchInput(LookAxisVector.Y);
+	}
+}
+
+void ASkateCharacter::Spin(const FVector2D& input)
+{
+	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial)
+	{
+		GetCapsuleComponent()->AddRelativeRotation(FRotator(0, HorizontalSpinMomentum, 0));
+		HorizontalSpinMomentum += input.X * HorizontalSpinSpeed * GetWorld()->GetDeltaSeconds();
+	}
+	else
+	{
+		HorizontalSpinMomentum = 0;
 	}
 }
