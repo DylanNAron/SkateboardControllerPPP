@@ -76,6 +76,9 @@ void ASkateCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	Spin(_movementVector);
+	Flip(_movementVector);
+
 }
 
 
@@ -93,6 +96,7 @@ void ASkateCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 
 		//Moving
 		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &ASkateCharacter::Move);
+		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Completed, this, &ASkateCharacter::MoveComplete);
 
 		//Looking
 		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &ASkateCharacter::Look);
@@ -100,6 +104,7 @@ void ASkateCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInp
 	}
 
 }
+
 
 FCollisionQueryParams ASkateCharacter::GetIgnoreCharacterParams() const
 {
@@ -115,7 +120,7 @@ FCollisionQueryParams ASkateCharacter::GetIgnoreCharacterParams() const
 void ASkateCharacter::Move(const FInputActionValue& Value)
 {
 	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
+	_movementVector = Value.Get<FVector2D>();
 
 	if (Controller != nullptr)
 	{
@@ -129,9 +134,6 @@ void ASkateCharacter::Move(const FInputActionValue& Value)
 			ForwardDirection = FollowCamera->GetForwardVector();
 			RightDirection = FollowCamera->GetRightVector();
 
-			//Skate spinning
-			Spin(MovementVector);
-
 		}
 		else
 		{
@@ -144,11 +146,16 @@ void ASkateCharacter::Move(const FInputActionValue& Value)
 		}
 
 		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
+		AddMovementInput(ForwardDirection, _movementVector.Y);
+		AddMovementInput(RightDirection, _movementVector.X);
 
 
 	}
+}
+
+void ASkateCharacter::MoveComplete(const FInputActionValue& Value)
+{
+	_movementVector = FVector2D::Zero();
 }
 
 void ASkateCharacter::Look(const FInputActionValue& Value)
@@ -168,11 +175,34 @@ void ASkateCharacter::Spin(const FVector2D& input)
 {
 	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial)
 	{
-		GetCapsuleComponent()->AddRelativeRotation(FRotator(0, HorizontalSpinMomentum, 0));
 		HorizontalSpinMomentum += input.X * HorizontalSpinSpeed * GetWorld()->GetDeltaSeconds();
+		HorizontalSpinMomentum *= (1.0 - MomentumDecay);
+		GetCapsuleComponent()->AddWorldRotation(FRotator(0, HorizontalSpinMomentum, 0));
 	}
 	else
 	{
 		HorizontalSpinMomentum = 0;
 	}
+}
+
+void ASkateCharacter::Flip(const FVector2D& input)
+{
+	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial)
+	{
+		if (_isGrabbing)
+		{
+			VerticalFlipMomentum += input.Y * VerticalFlipSpeed * GetWorld()->GetDeltaSeconds();
+		}
+		VerticalFlipMomentum *= (1.0 - MomentumDecay);
+		GetCapsuleComponent()->AddLocalRotation(FRotator(-VerticalFlipMomentum, 0, 0));
+	}
+	else
+	{
+		VerticalFlipMomentum = 0;
+	}
+}
+
+void ASkateCharacter::Grab()
+{
+	_isGrabbing = !_isGrabbing;
 }

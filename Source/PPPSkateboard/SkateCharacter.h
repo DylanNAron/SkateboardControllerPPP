@@ -37,8 +37,11 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 		class UInputAction* LookAction;
 
 	//Params
-	UPROPERTY(EditDefaultsOnly, Category = "SkaterSettings") float HorizontalSpinSpeed = 10.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkaterSettings", meta = (AllowPrivateAccess = "true")) float HorizontalSpinMomentum = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float HorizontalSpinSpeed = 50.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float MomentumDecay = .07f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) float HorizontalSpinMomentum = 0.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) float VerticalFlipMomentum = 0.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float VerticalFlipSpeed = 50.f;
 
 public:
 	// Sets default values for this character's properties
@@ -49,11 +52,15 @@ protected:
 
 	/** Called for movement input */
 	void Move(const FInputActionValue& Value);
+	void MoveComplete(const FInputActionValue& Value);
 
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
 	void Spin(const FVector2D& input);
+	void Flip(const FVector2D& input);
+	
+
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -65,6 +72,9 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+	UFUNCTION(BlueprintCallable, Category = "Skate")
+		void Grab();
+
 public:
 	/** Returns CameraBoom subobject **/
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
@@ -72,4 +82,10 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
+
+private:
+
+	FVector2D _movementVector;
+	bool _isGrabbing{ false };
+
 };
