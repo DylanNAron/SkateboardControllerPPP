@@ -42,6 +42,11 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) float HorizontalSpinMomentum = 0.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) float VerticalFlipMomentum = 0.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float VerticalFlipSpeed = 50.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float DistanceToCheckLanding = 500.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float TimeToAdjustAerialInAir = 5.f;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float HorizontalAngleForCrash = 75.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float MinSpeedForAngleCrash = 75.f;
 
 public:
 	// Sets default values for this character's properties
@@ -57,9 +62,24 @@ protected:
 	/** Called for looking input */
 	void Look(const FInputActionValue& Value);
 
+	/// <summary>
+	/// Apply horizontal rotation in air based on input with a momentum
+	/// </summary>
+	/// <param name="input"></param>
 	void Spin(const FVector2D& input);
+	/// <summary>
+	///  Apply vertical rotation in air based on input with a momentum, must be grabbing to flip
+	/// </summary>
+	/// <param name="input"></param>
 	void Flip(const FVector2D& input);
-	
+	/// <summary>
+	/// Called on tick ; when isAerial, apply slight adjustments to skater rotation for perfect landings (within reason)
+	/// </summary>
+	void AdjustAerialRotation();
+	/// <summary>
+	/// Called on tick ; check if we skater should bail/crash
+	/// </summary>
+	void CheckCrash();
 
 
 	// Called when the game starts or when spawned
@@ -87,5 +107,8 @@ private:
 
 	FVector2D _movementVector;
 	bool _isGrabbing{ false };
+
+	float _aerialAdjustTime{ 0 };
+	FVector _previousVelocity{};
 
 };

@@ -55,6 +55,7 @@ ASkateCharacter::ASkateCharacter(const FObjectInitializer& ObjectInitializer) : 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
+
 // Called when the game starts or when spawned
 void ASkateCharacter::BeginPlay()
 {
@@ -78,6 +79,8 @@ void ASkateCharacter::Tick(float DeltaTime)
 
 	Spin(_movementVector);
 	Flip(_movementVector);
+	AdjustAerialRotation();
+	CheckCrash();
 
 }
 
@@ -200,6 +203,71 @@ void ASkateCharacter::Flip(const FVector2D& input)
 	{
 		VerticalFlipMomentum = 0;
 	}
+}
+
+void ASkateCharacter::AdjustAerialRotation()
+{
+	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial)
+	{
+		//Raycast from relative direction vector
+		
+		FVector Velocity = GetCharacterMovement()->Velocity;
+		FVector StartTrace = GetActorLocation();
+		FVector EndTrace = GetActorLocation() + Velocity.GetSafeNormal() * DistanceToCheckLanding;
+		FHitResult OutHit;
+
+		//DrawDebugLine(GetWorld(), StartTrace, EndTrace, FColor::Purple, false, 3, 0, 5);
+
+		if (GetWorld()->LineTraceSingleByChannel(OutHit, StartTrace, EndTrace, ECC_WorldStatic, GetIgnoreCharacterParams()))
+		{
+			//rotate
+			FRotator LandAlignment = FRotationMatrix::MakeFromZX(OutHit.ImpactNormal, GetActorForwardVector()).Rotator();
+
+			_aerialAdjustTime += GetWorld()->GetDeltaSeconds();
+			LandAlignment.Yaw = GetActorRotation().Yaw;
+			LandAlignment.Roll = GetActorRotation().Roll;
+
+			double debugPitchDelta = LandAlignment.Pitch - GetActorRotation().Pitch;
+			//Adjust player pitch (flipping)
+			//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Pitch Delta:: %f"), debugPitchDelta));
+
+			SetActorRotation(FMath::Lerp(GetActorRotation(), LandAlignment, _aerialAdjustTime / TimeToAdjustAerialInAir));
+
+
+		}
+		else
+		{
+			_aerialAdjustTime = 0;
+		}
+	}
+	else
+	{
+		_aerialAdjustTime = 0;
+	}
+
+}
+
+void ASkateCharacter::CheckCrash()
+{
+	//Check if we land sideways (greater than given angle to fall off board)
+	FVector CurrentVelocity = GetMovementComponent()->Velocity;
+
+	FVector LocalForwardPrevious = _previousVelocity.GetSafeNormal();
+	FVector LocalForwardCurrent = GetActorForwardVector();//CurrentVelocity.GetSafeNormal();
+
+	float DotProduct = FVector::DotProduct(LocalForwardPrevious, LocalForwardCurrent);
+	float Angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+
+	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Angler:: %f"), Angle));
+
+	////RagDoll
+	//if (Angle > HorizontalAngleForCrash && CurrentVelocity.Size() > MinSpeedForAngleCrash)
+	//{
+	//	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	//	GetMesh()->SetSimulatePhysics(true);
+	//}
+
+	_previousVelocity = GetMovementComponent()->Velocity;
 }
 
 void ASkateCharacter::Grab()
