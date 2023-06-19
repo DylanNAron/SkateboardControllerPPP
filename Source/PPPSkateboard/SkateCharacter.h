@@ -45,8 +45,9 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float DistanceToCheckLanding = 500.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float TimeToAdjustAerialInAir = 5.f;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float HorizontalAngleForCrash = 75.f;
-	UPROPERTY(EditDefaultsOnly, Category = "Spin/Flip") float MinSpeedForAngleCrash = 75.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Crash") float SpinAngleForCrash = 17.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Crash") float MinSpeedForAngleCrash = 700.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Crash") float CrashResetTime = 4.f;
 
 public:
 	// Sets default values for this character's properties
@@ -81,6 +82,8 @@ protected:
 	/// </summary>
 	void CheckCrash();
 
+	void CrashTimer();
+
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -94,6 +97,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Skate")
 		void Grab();
+
+	UFUNCTION(BlueprintCallable, Category = "Skate")
+		void Crash();
 
 public:
 	/** Returns CameraBoom subobject **/
@@ -110,5 +116,12 @@ private:
 
 	float _aerialAdjustTime{ 0 };
 	FVector _previousVelocity{};
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) 
+	bool _wasAerial {false};
+	bool _isCrash{ false };
+
+	FTimerHandle _crashTimer;
+
+	FTransform _meshOriginalTransform;
 
 };

@@ -69,6 +69,9 @@ void ASkateCharacter::BeginPlay()
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
+
+	//GetPositionOfMeshForRespawningAfterBails
+	_meshOriginalTransform = GetMesh()->GetRelativeTransform();
 	
 }
 
@@ -249,25 +252,51 @@ void ASkateCharacter::AdjustAerialRotation()
 
 void ASkateCharacter::CheckCrash()
 {
-	//Check if we land sideways (greater than given angle to fall off board)
-	FVector CurrentVelocity = GetMovementComponent()->Velocity;
 
-	FVector LocalForwardPrevious = _previousVelocity.GetSafeNormal();
-	FVector LocalForwardCurrent = GetActorForwardVector();//CurrentVelocity.GetSafeNormal();
+	//On land
+	if(_wasAerial && !Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial && !_isCrash)
+	{
+		//Check if we land sideways (greater than given angle to fall off board)
+		FVector CurrentVelocity = GetMovementComponent()->Velocity;
+		FVector PrevVelocity = _previousVelocity;
 
-	float DotProduct = FVector::DotProduct(LocalForwardPrevious, LocalForwardCurrent);
-	float Angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+		FVector prevVelocityLocal = ActorToWorld().InverseTransformVector(PrevVelocity);
+		FVector currentVelocityLocal = ActorToWorld().InverseTransformVector(CurrentVelocity);
+		prevVelocityLocal.Normalize();
+		currentVelocityLocal.Normalize();
 
-	//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Angler:: %f"), Angle));
+		// Calculate the dot product between the normalized vectors to get angle
+		float dotProduct = FVector::DotProduct(prevVelocityLocal, currentVelocityLocal);
+		float angleInRadians = FMath::Acos(dotProduct);
+		float Angle = FMath::RadiansToDegrees(angleInRadians);
 
-	////RagDoll
-	//if (Angle > HorizontalAngleForCrash && CurrentVelocity.Size() > MinSpeedForAngleCrash)
-	//{
-	//	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-	//	GetMesh()->SetSimulatePhysics(true);
-	//}
+		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Angler:: %f"), Angle));
+		//RagDoll
+		if (Angle > SpinAngleForCrash && CurrentVelocity.Size() > MinSpeedForAngleCrash)
+		{
+			Crash();
+		}
+	}
 
 	_previousVelocity = GetMovementComponent()->Velocity;
+	_wasAerial = Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial;
+}
+
+void ASkateCharacter::CrashTimer()
+{
+	GetMesh()->SetSimulatePhysics(false);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	GetMesh()->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+	GetMesh()->SetRelativeTransform(_meshOriginalTransform);
+	_isCrash = false;
+}
+
+void ASkateCharacter::Crash()
+{
+	_isCrash = true;
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	GetMesh()->SetSimulatePhysics(true);
+	GetWorldTimerManager().SetTimer(_crashTimer, this, &ASkateCharacter::CrashTimer, CrashResetTime, false);
 }
 
 void ASkateCharacter::Grab()
