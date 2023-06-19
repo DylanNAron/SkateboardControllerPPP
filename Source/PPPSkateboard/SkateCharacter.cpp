@@ -50,9 +50,6 @@ ASkateCharacter::ASkateCharacter(const FObjectInitializer& ObjectInitializer) : 
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 }
 
 
@@ -72,7 +69,10 @@ void ASkateCharacter::BeginPlay()
 
 	//GetPositionOfMeshForRespawningAfterBails
 	_meshOriginalTransform = GetMesh()->GetRelativeTransform();
-	
+
+	//Setup collision delegate
+	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ASkateCharacter::OnCapsuleComponentHit);
+
 }
 
 // Called every frame
@@ -289,7 +289,14 @@ void ASkateCharacter::CrashTimer()
 	GetMesh()->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 	GetMesh()->SetRelativeTransform(_meshOriginalTransform);
 	_isCrash = false;
+
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController != nullptr)
+	{
+		PlayerController->EnableInput(PlayerController);
+	}
 }
+
 
 void ASkateCharacter::Crash()
 {
@@ -297,9 +304,25 @@ void ASkateCharacter::Crash()
 	GetMesh()->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	GetMesh()->SetSimulatePhysics(true);
 	GetWorldTimerManager().SetTimer(_crashTimer, this, &ASkateCharacter::CrashTimer, CrashResetTime, false);
+	SetActorRotation(FRotator(0, CameraBoom->GetRelativeRotation().Yaw, 0));
+	
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController != nullptr)
+	{
+		PlayerController->DisableInput(PlayerController);
+	}
 }
 
 void ASkateCharacter::Grab()
 {
 	_isGrabbing = !_isGrabbing;
+}
+
+void ASkateCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	//If capsule component is hit and we are still in an aerial then that means we landed upside down
+	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial)
+	{
+		Crash();
+	}
 }

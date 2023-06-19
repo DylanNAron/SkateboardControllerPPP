@@ -142,7 +142,7 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 bool USkateCharacterMovementComponent::GetSkateSurface(FHitResult& Hit) const
 {
 	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f * FVector::DownVector;
+	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f * (-1 * CharacterOwner->GetActorUpVector());//FVector::DownVector;
 	FName ProfileName = TEXT("BlockAll");
 
 	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, SkateCharacterOwner->GetIgnoreCharacterParams());
