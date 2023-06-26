@@ -120,12 +120,13 @@ public:
 private:
 
 	FVector2D _movementVector;
-	bool _isGrabbing{ false };
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true"))
+		bool _isGrabbing{ false };
 
 	float _aerialAdjustTime{ 0 };
 	FVector _previousVelocity{};
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) 
-	bool _wasAerial {false};
+		bool _wasAerial {false};
 	bool _isCrash{ false };
 
 	FTimerHandle _crashTimer;
