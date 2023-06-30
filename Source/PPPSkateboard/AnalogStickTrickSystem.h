@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/Engine.h"
 #include "Components/ActorComponent.h"
 #include "AnalogStickTrickSystem.generated.h"
 
@@ -13,7 +14,7 @@ class PPPSKATEBOARD_API UAnalogStickTrickSystem : public UActorComponent
 	GENERATED_BODY()
 
 	UPROPERTY()
-	class APlayerController* PlayerController;
+	APlayerController* PlayerController;
 
 public:	
 	// Sets default values for this component's properties
@@ -35,12 +36,28 @@ private:
 	/// <param name="x"> x position</param>
 	/// <param name="y"> y position</param>
 	/// <returns>boolean whether stick is at edge of circle</returns>
-	bool IsCloseToEdge(float x, float y);
+	bool IsCloseToEdge(const float x, const float y);
 
-	int GetSection(float x, float y);
+	/// <summary>
+	/// Get Section of the circle that we have hit, numSections defaulted to 8 with an offset so that position 1 will be at bottom of circle
+	/// </summary>
+	/// <param name="x"></param>
+	/// <param name="y"></param>
+	/// <returns>Section of Circle we have hit with analog stick</returns>
+	int GetSection(const float x, const float y);
+	static const int numSections{ 8 };
+	static constexpr float offsetAngle{ (90 - (360/numSections)/2 ) * PI/180 }; //Have section 1 be at bottom of circle with a little offset
 
-	double _stickX{};
-	double _stickY{};
+	void CheckValidTrick();
+
+	float _stickX{};
+	float _stickY{};
+	TArray<int> currentCombo{};
+	bool isComboStart{ false };
+
+	//This will be initialized at start from custom data structure
+	TArray<TArray<int>> _possibleCombos{};
+
 
 public:	
 	// Called every frame

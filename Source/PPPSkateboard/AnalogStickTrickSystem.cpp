@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "AnalogStickTrickSystem.h"
 
 // Sets default values for this component's properties
@@ -26,19 +25,45 @@ void UAnalogStickTrickSystem::BeginPlay()
 		// Get the player controller
 		PlayerController = OwnerActor->GetWorld()->GetFirstPlayerController();
 	}
+
+	//BASIC OLLIE -- THESE SHOULD BE RETRIEVED FROM CUSTOM DATA STRUCTURE
+	_possibleCombos.Add( TArray{1,5} );
 	
 }
 
-bool UAnalogStickTrickSystem::IsCloseToEdge(float x, float y)
+bool UAnalogStickTrickSystem::IsCloseToEdge(const float x, const float y)
 {
-	return false;
+	double distance = std::sqrt(x * x + y * y);
+	return std::abs(distance - 1) <= EdgeThreshold;
 }
 
-int UAnalogStickTrickSystem::GetSection(float x, float y)
+int UAnalogStickTrickSystem::GetSection(const float x, const float y)
 {
-	return 0;
+	float angle = std::atan2(y, x);
+	if (angle < 0) {
+		angle += 2 * PI;
+	}
+	float sectionSize = 2 * PI / numSections;
+	float adjustedAngle = angle - offsetAngle;
+	if (adjustedAngle < 0) {
+		adjustedAngle += 2 * PI;
+	}
+	int section = static_cast<int>(adjustedAngle / sectionSize) + 1;
+	return section;
 }
 
+
+void UAnalogStickTrickSystem::CheckValidTrick()
+{
+	for (const auto& combo : _possibleCombos)
+	{
+		if (currentCombo == combo)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("U FLICKED AN OLLIE!!!!!!!!")));
+			isComboStart = false;
+		}
+	}
+}
 
 // Called every frame
 void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -48,8 +73,34 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 	if (PlayerController)
 	{
 		PlayerController->GetInputAnalogStickState(EControllerAnalogStick::CAS_RightStick, _stickX, _stickY);
-		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Right Stick:: X: %f, Y: %f"), _stickX, _stickY));
 	}
+
+	if (IsCloseToEdge(_stickX, _stickY))
+	{
+		isComboStart = true;
+		int SectionHIT = GetSection(_stickX, _stickY);
+		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("%d SectionHit!"), SectionHIT));
+		if (currentCombo.IsEmpty() || currentCombo.Last() != SectionHIT)
+		{
+			currentCombo.Add(SectionHIT);
+		}
+	}
+
+	if (isComboStart)
+	{
+		CheckValidTrick();
+	}
+
+
+	//DEBUG PRINTING
+	FString ArrayContents;
+	for (int32 Element : currentCombo)
+	{
+		ArrayContents += FString::Printf(TEXT("%d "), Element);
+	}
+	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *ArrayContents);
+	GEngine->AddOnScreenDebugMessage(-1, .01f, FColor::Magenta, DebugMessage);
+
 
 
 }
