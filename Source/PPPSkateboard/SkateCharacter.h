@@ -5,12 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputActionValue.h"
+#include "AnalogStickTrickSystem.h"
 #include "SkateCharacter.generated.h"
 
 UCLASS()
 class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 {
 	GENERATED_BODY()
+
+	/*  Trick System Actor Component */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Tricks, meta = (AllowPrivateAccess = "true"))
+	class UAnalogStickTrickSystem* TrickSystem;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
