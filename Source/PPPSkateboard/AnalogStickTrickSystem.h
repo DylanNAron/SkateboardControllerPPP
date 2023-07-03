@@ -8,6 +8,23 @@
 #include "AnalogStickTrickSystem.generated.h"
 
 
+USTRUCT(BlueprintType)
+struct FTrickComboStruct
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FString TrickName;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<int> InputCombo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UAnimMontage* PlayerMontage;
+		
+};
+
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PPPSKATEBOARD_API UAnalogStickTrickSystem : public UActorComponent
 {
@@ -21,7 +38,6 @@ public:
 	UAnalogStickTrickSystem();
 
 	UPROPERTY(EditDefaultsOnly, Category = "Tolerance") float EdgeThreshold = 0.1f;
-
 
 
 protected:
@@ -58,6 +74,10 @@ private:
 	//This will be initialized at start from custom data structure
 	TArray<TArray<int>> _possibleCombos{};
 
+	UPROPERTY(EditDefaultsOnly)
+		TArray<FTrickComboStruct> _possibleTrickCombos{};
+
+
 
 public:	
 	// Called every frame
@@ -65,3 +85,4 @@ public:
 
 		
 };
+

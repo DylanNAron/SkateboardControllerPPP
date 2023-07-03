@@ -99,7 +99,7 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 		ArrayContents += FString::Printf(TEXT("%d "), Element);
 	}
 	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *ArrayContents);
-	GEngine->AddOnScreenDebugMessage(-1, .01f, FColor::Magenta, DebugMessage);
+	GEngine->AddOnScreenDebugMessage(-1, .001f, FColor::Magenta, DebugMessage);
 
 
 
