@@ -71,18 +71,14 @@ private:
 	TArray<int> currentCombo{};
 	bool isComboStart{ false };
 
-	//This will be initialized at start from custom data structure
-	TArray<TArray<int>> _possibleCombos{};
-
-	UPROPERTY(EditDefaultsOnly)
-		TArray<FTrickComboStruct> _possibleTrickCombos{};
-
-
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TArray<FTrickComboStruct> _possibleTrickCombos{};
+
 };
 

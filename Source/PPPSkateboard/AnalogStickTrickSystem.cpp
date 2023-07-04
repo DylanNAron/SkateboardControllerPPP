@@ -25,9 +25,6 @@ void UAnalogStickTrickSystem::BeginPlay()
 		// Get the player controller
 		PlayerController = OwnerActor->GetWorld()->GetFirstPlayerController();
 	}
-
-	//BASIC OLLIE -- THESE SHOULD BE RETRIEVED FROM CUSTOM DATA STRUCTURE
-	_possibleCombos.Add( TArray{1,5} );
 	
 }
 
@@ -55,12 +52,14 @@ int UAnalogStickTrickSystem::GetSection(const float x, const float y)
 
 void UAnalogStickTrickSystem::CheckValidTrick()
 {
-	for (const auto& combo : _possibleCombos)
+
+	for (const auto& combo : _possibleTrickCombos)
 	{
-		if (currentCombo == combo)
+		if (currentCombo == combo.InputCombo)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("U FLICKED AN OLLIE!!!!!!!!")));
+			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, combo.TrickName);
 			isComboStart = false;
+			currentCombo.Empty();
 		}
 	}
 }
