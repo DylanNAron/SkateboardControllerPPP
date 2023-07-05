@@ -60,6 +60,8 @@ void UAnalogStickTrickSystem::CheckValidTrick()
 			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, combo.TrickName);
 			isComboStart = false;
 			currentCombo.Empty();
+
+			OnTrickFlicked.Broadcast(combo);
 		}
 	}
 }
@@ -88,10 +90,18 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 	if (isComboStart)
 	{
 		CheckValidTrick();
+		
 	}
 
 
-	//DEBUG PRINTING
+
+
+
+
+
+
+
+	//**********DEBUG PRINTING********************
 	FString ArrayContents;
 	for (int32 Element : currentCombo)
 	{
@@ -99,7 +109,7 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 	}
 	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *ArrayContents);
 	GEngine->AddOnScreenDebugMessage(-1, .001f, FColor::Magenta, DebugMessage);
-
+	//**********DEBUG PRINTING********************
 
 
 }

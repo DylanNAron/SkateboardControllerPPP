@@ -22,8 +22,12 @@ struct FTrickComboStruct
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UAnimMontage* PlayerMontage;
 		
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float JumpHeight {700};
 };
 
+
+DECLARE_MULTICAST_DELEGATE_OneParam(FAnalogTrickSystemDelegate, FTrickComboStruct Trick);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class PPPSKATEBOARD_API UAnalogStickTrickSystem : public UActorComponent
@@ -75,6 +79,8 @@ private:
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	FAnalogTrickSystemDelegate OnTrickFlicked;
 
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

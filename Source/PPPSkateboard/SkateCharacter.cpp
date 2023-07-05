@@ -75,6 +75,9 @@ void ASkateCharacter::BeginPlay()
 	//Setup collision delegate
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ASkateCharacter::OnCapsuleComponentHit);
 
+
+	//Delegate for Flicking Flatground Tricks
+	TrickSystem->OnTrickFlicked.AddUObject(this, &ASkateCharacter::HandleTrickSystemFlick);
 }
 
 // Called every frame
@@ -297,6 +300,12 @@ void ASkateCharacter::CrashTimer()
 	{
 		PlayerController->EnableInput(PlayerController);
 	}
+}
+
+void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
+{
+	GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
+	GetMesh()->GetAnimInstance()->Montage_Play(Trick.PlayerMontage);
 }
 
 

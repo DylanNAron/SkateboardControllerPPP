@@ -89,6 +89,12 @@ protected:
 
 	void CrashTimer();
 
+	/// <summary>
+	/// Handle Trick Delegate from the Trick System. Will enact the flicked trick if we are in a valid state
+	/// </summary>
+	/// <param name="Trick">Trick Struct to enact</param>
+	void HandleTrickSystemFlick(FTrickComboStruct Trick);
+
 	UFUNCTION()
 	void OnCapsuleComponentHit(
 		UPrimitiveComponent* HitComponent,
