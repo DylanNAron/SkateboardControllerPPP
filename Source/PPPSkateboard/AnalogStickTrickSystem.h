@@ -21,6 +21,9 @@ struct FTrickComboStruct
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UAnimMontage* PlayerMontage;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UAnimMontage* BoardMontage;
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float JumpHeight {700};

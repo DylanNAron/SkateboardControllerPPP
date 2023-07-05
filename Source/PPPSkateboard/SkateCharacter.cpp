@@ -52,6 +52,8 @@ ASkateCharacter::ASkateCharacter(const FObjectInitializer& ObjectInitializer) : 
 
 	//Analog Trick System actor component
 	TrickSystem = CreateDefaultSubobject<UAnalogStickTrickSystem>(TEXT("TrickSystem"));
+
+	SkateboardMesh = CreateDefaultSubobject<USkeletalMesh>(TEXT("SkateboardMesh"));
 }
 
 
