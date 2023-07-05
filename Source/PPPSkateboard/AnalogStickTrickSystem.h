@@ -68,7 +68,18 @@ private:
 	static const int numSections{ 8 };
 	static constexpr float offsetAngle{ (90 - (360/numSections)/2 ) * PI/180 }; //Have section 1 be at bottom of circle with a little offset
 
+	/// <summary>
+	/// Check all possible trick combos if we have a valid trick to enact
+	/// </summary>
 	void CheckValidTrick();
+
+	/// <summary>
+	/// Check if analog stick is in deadzone for long enough time to consider combo cancelled
+	/// </summary>
+	void CheckDeadZone();
+	const float _DeadZoneTimeTolerance{ .05f };
+	FTimerHandle _DeadZoneTimerHandle;
+	void OnDeadZoneTimerElapsed();
 
 	float _stickX{};
 	float _stickY{};

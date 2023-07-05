@@ -66,6 +66,32 @@ void UAnalogStickTrickSystem::CheckValidTrick()
 	}
 }
 
+void UAnalogStickTrickSystem::CheckDeadZone()
+{
+	//Start Timer if at Zero , and Cancel if not 
+	if (FMath::IsNearlyZero(_stickX) && FMath::IsNearlyZero(_stickY))
+	{
+		if (!GetWorld()->GetTimerManager().IsTimerActive(_DeadZoneTimerHandle))
+		{
+			GetWorld()->GetTimerManager().SetTimer(_DeadZoneTimerHandle, this, &UAnalogStickTrickSystem::OnDeadZoneTimerElapsed, _DeadZoneTimeTolerance, false);
+		}
+	}
+	else
+	{
+		if (GetWorld()->GetTimerManager().IsTimerActive(_DeadZoneTimerHandle))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(_DeadZoneTimerHandle);
+		}
+	}
+
+}
+
+void UAnalogStickTrickSystem::OnDeadZoneTimerElapsed()
+{
+	isComboStart = false;
+	currentCombo.Empty();
+}
+
 // Called every frame
 void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -90,7 +116,7 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 	if (isComboStart)
 	{
 		CheckValidTrick();
-		
+		CheckDeadZone();
 	}
 
 
