@@ -17,12 +17,12 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Tricks, meta = (AllowPrivateAccess = "true"))
 		class UAnalogStickTrickSystem* TrickSystem;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Tricks, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Tricks, meta = (AllowPrivateAccess = "true"))
 		class USkeletalMeshComponent* SkateboardMesh;
 
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* CameraBoom;
+		class USpringArmComponent* CameraBoom;
 
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))

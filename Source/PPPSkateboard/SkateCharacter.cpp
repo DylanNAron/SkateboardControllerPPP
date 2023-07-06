@@ -54,6 +54,7 @@ ASkateCharacter::ASkateCharacter(const FObjectInitializer& ObjectInitializer) : 
 	TrickSystem = CreateDefaultSubobject<UAnalogStickTrickSystem>(TEXT("TrickSystem"));
 
 	SkateboardMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkateboardMesh"));
+	SkateboardMesh->SetupAttachment(RootComponent);
 }
 
 
@@ -308,6 +309,7 @@ void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 {
 	GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
 	GetMesh()->GetAnimInstance()->Montage_Play(Trick.PlayerMontage);
+	SkateboardMesh->GetAnimInstance()->Montage_Play(Trick.BoardMontage);
 }
 
 
