@@ -34,7 +34,7 @@ bool UAnalogStickTrickSystem::IsCloseToEdge(const float x, const float y)
 	return std::abs(distance - 1) <= EdgeThreshold;
 }
 
-int UAnalogStickTrickSystem::GetSection(const float x, const float y)
+ESection UAnalogStickTrickSystem::GetSection(const float x, const float y)
 {
 	float angle = std::atan2(y, x);
 	if (angle < 0) {
@@ -45,8 +45,8 @@ int UAnalogStickTrickSystem::GetSection(const float x, const float y)
 	if (adjustedAngle < 0) {
 		adjustedAngle += 2 * PI;
 	}
-	int section = static_cast<int>(adjustedAngle / sectionSize) + 1;
-	return section;
+	int section = static_cast<int>(adjustedAngle / sectionSize);
+	return static_cast<ESection>(section);
 }
 
 
@@ -105,7 +105,7 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 	if (IsCloseToEdge(_stickX, _stickY))
 	{
 		isComboStart = true;
-		int SectionHIT = GetSection(_stickX, _stickY);
+		ESection SectionHIT = GetSection(_stickX, _stickY);
 		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("%d SectionHit!"), SectionHIT));
 		if (currentCombo.IsEmpty() || currentCombo.Last() != SectionHIT)
 		{
@@ -126,14 +126,20 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 
 
 
-
 	//**********DEBUG PRINTING********************
-	FString ArrayContents;
-	for (int32 Element : currentCombo)
+	//UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("EMyEnum"), true);
+	FString EnumString;
+	for (int32 Index = 0; Index < currentCombo.Num(); ++Index)
 	{
-		ArrayContents += FString::Printf(TEXT("%d "), Element);
+		ESection EnumValue = currentCombo[Index];
+		FString EnumName = *UEnum::GetValueAsString<ESection>(EnumValue);
+		if (Index > 0)
+		{
+			EnumString += ", ";
+		}
+		EnumString += EnumName;
 	}
-	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *ArrayContents);
+	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *EnumString);
 	GEngine->AddOnScreenDebugMessage(-1, .001f, FColor::Magenta, DebugMessage);
 	//**********DEBUG PRINTING********************
 

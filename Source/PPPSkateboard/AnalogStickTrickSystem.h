@@ -8,6 +8,19 @@
 #include "AnalogStickTrickSystem.generated.h"
 
 
+UENUM(BlueprintType)
+enum class ESection : uint8
+{
+	Bottom = 0,
+	BottomLeft,
+	Left,
+	TopLeft,
+	Top,
+	TopRight,
+	Right,
+	BottomRight,
+};
+
 USTRUCT(BlueprintType)
 struct FTrickComboStruct
 {
@@ -17,7 +30,7 @@ struct FTrickComboStruct
 		FString TrickName;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TArray<int> InputCombo;
+		TArray<ESection> InputCombo; //There are 8 possible sections to choose from along the circle for a possible combo (Section Enum clearly indicates position)
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UAnimMontage* PlayerMontage;
@@ -67,7 +80,7 @@ private:
 	/// <param name="x"></param>
 	/// <param name="y"></param>
 	/// <returns>Section of Circle we have hit with analog stick</returns>
-	int GetSection(const float x, const float y);
+	ESection GetSection(const float x, const float y);
 	static const int numSections{ 8 };
 	static constexpr float offsetAngle{ (90 - (360/numSections)/2 ) * PI/180 }; //Have section 1 be at bottom of circle with a little offset
 
@@ -86,7 +99,7 @@ private:
 
 	float _stickX{};
 	float _stickY{};
-	TArray<int> currentCombo{};
+	TArray<ESection> currentCombo{};
 	bool isComboStart{ false };
 
 
