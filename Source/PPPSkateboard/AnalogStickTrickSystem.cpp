@@ -25,8 +25,23 @@ void UAnalogStickTrickSystem::BeginPlay()
 		// Get the player controller
 		PlayerController = OwnerActor->GetWorld()->GetFirstPlayerController();
 	}
+
+	FindStartSections();
 	
 }
+
+void UAnalogStickTrickSystem::FindStartSections()
+{
+	for (const auto& combo : _possibleTrickCombos)
+	{
+		if (startSections.Find(combo.InputCombo[0]) == INDEX_NONE)
+		{
+			startSections.Add(combo.InputCombo[0]);
+		}
+	}
+
+}
+
 
 bool UAnalogStickTrickSystem::IsCloseToEdge(const float x, const float y)
 {
@@ -58,7 +73,7 @@ void UAnalogStickTrickSystem::CheckValidTrick()
 		if (currentCombo == combo.InputCombo)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, combo.TrickName);
-			isComboStart = false;
+			_isComboStart = false;
 			currentCombo.Empty();
 
 			OnTrickFlicked.Broadcast(combo);
@@ -88,7 +103,7 @@ void UAnalogStickTrickSystem::CheckDeadZone()
 
 void UAnalogStickTrickSystem::OnDeadZoneTimerElapsed()
 {
-	isComboStart = false;
+	_isComboStart = false;
 	currentCombo.Empty();
 }
 
@@ -104,25 +119,22 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 
 	if (IsCloseToEdge(_stickX, _stickY))
 	{
-		isComboStart = true;
 		ESection SectionHIT = GetSection(_stickX, _stickY);
-		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("%d SectionHit!"), SectionHIT));
-		if (currentCombo.IsEmpty() || currentCombo.Last() != SectionHIT)
+		if (_isComboStart || startSections.Find(SectionHIT) != INDEX_NONE)
 		{
-			currentCombo.Add(SectionHIT);
+			_isComboStart = true;
+			if (currentCombo.IsEmpty() || currentCombo.Last() != SectionHIT)
+			{
+				currentCombo.Add(SectionHIT);
+			}
 		}
 	}
 
-	if (isComboStart)
+	if (_isComboStart)
 	{
 		CheckValidTrick();
 		CheckDeadZone();
 	}
-
-
-
-
-
 
 
 
@@ -142,7 +154,6 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *EnumString);
 	GEngine->AddOnScreenDebugMessage(-1, .001f, FColor::Magenta, DebugMessage);
 	//**********DEBUG PRINTING********************
-
 
 }
 

@@ -100,11 +100,19 @@ private:
 	float _stickX{};
 	float _stickY{};
 	TArray<ESection> currentCombo{};
-	bool isComboStart{ false };
+
+	bool _isComboStart{ false };
+
+	/// <summary>
+	/// Based on possible tricks find all the possible sections a trick can start from
+	/// </summary>
+	void FindStartSections();
+
+	TArray<ESection> startSections{};
+
 
 
 public:	
-	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	FAnalogTrickSystemDelegate OnTrickFlicked;
@@ -112,6 +120,9 @@ public:
 		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<FTrickComboStruct> _possibleTrickCombos{};
+
+	UFUNCTION(BlueprintCallable)
+	inline bool isComboStart() { return _isComboStart; }
 
 };
 
