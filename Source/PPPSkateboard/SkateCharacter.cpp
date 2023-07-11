@@ -278,7 +278,7 @@ void ASkateCharacter::CheckCrash()
 		float angleInRadians = FMath::Acos(dotProduct);
 		float Angle = FMath::RadiansToDegrees(angleInRadians);
 
-		GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Angler:: %f"), Angle));
+		//GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, FString::Printf(TEXT("Angle:: %f"), Angle));
 		//RagDoll
 		if (Angle > SpinAngleForCrash && CurrentVelocity.Size() > MinSpeedForAngleCrash)
 		{
@@ -305,11 +305,19 @@ void ASkateCharacter::CrashTimer()
 	}
 }
 
+void ASkateCharacter::TrickDisplayTimer()
+{
+	PreviousTrick = FText::FromString("");
+}
+
 void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 {
 	GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
 	GetMesh()->GetAnimInstance()->Montage_Play(Trick.PlayerMontage);
 	SkateboardMesh->GetAnimInstance()->Montage_Play(Trick.BoardMontage);
+	
+	PreviousTrick = FText::FromString(Trick.TrickName);
+	GetWorldTimerManager().SetTimer(_trickDisplayTimer, this, &ASkateCharacter::TrickDisplayTimer, TrickDisplayTime, false);
 }
 
 

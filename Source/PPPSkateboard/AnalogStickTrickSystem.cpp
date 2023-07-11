@@ -72,7 +72,6 @@ void UAnalogStickTrickSystem::CheckValidTrick()
 	{
 		if (currentCombo == combo.InputCombo)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 2, FColor::Emerald, combo.TrickName);
 			_isComboStart = false;
 			currentCombo.Empty();
 

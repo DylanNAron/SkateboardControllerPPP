@@ -57,6 +57,10 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 	UPROPERTY(EditDefaultsOnly, Category = "Crash") float MinSpeedForAngleCrash = 700.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Crash") float CrashResetTime = 4.f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Tricks", meta = (AllowPrivateAccess = "true")) FText PreviousTrick;
+	UPROPERTY(EditDefaultsOnly, Category = "Tricks") float TrickDisplayTime = 2.f;
+
+
 public:
 	// Sets default values for this character's properties
 	ASkateCharacter(const FObjectInitializer& ObjectInitializer);
@@ -91,6 +95,8 @@ protected:
 	void CheckCrash();
 
 	void CrashTimer();
+
+	void TrickDisplayTimer();
 
 	/// <summary>
 	/// Handle Trick Delegate from the Trick System. Will enact the flicked trick if we are in a valid state
@@ -131,6 +137,7 @@ public:
 
 	FCollisionQueryParams GetIgnoreCharacterParams() const;
 
+
 private:
 
 	FVector2D _movementVector;
@@ -144,6 +151,7 @@ private:
 	bool _isCrash{ false };
 
 	FTimerHandle _crashTimer;
+	FTimerHandle _trickDisplayTimer;
 
 	FTransform _meshOriginalTransform;
 
