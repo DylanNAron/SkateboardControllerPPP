@@ -46,7 +46,10 @@ protected:
 
 private:
 	void PhysSkate(float deltaTime, int32 Iterations);
+
 	bool GetSkateSurface(FHitResult& Hit) const;
+
+	bool GetSkateSurfaceNormalAvg(FVector& normalAverage) const;
 
 public:
 

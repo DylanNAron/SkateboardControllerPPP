@@ -46,20 +46,11 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	RestorePreAdditiveRootMotionVelocity();
 
 	//Adjust Velocity based on slope or if aerial
-	FHitResult SurfaceHit;
-	if (GetSkateSurface(SurfaceHit))
+	FVector SlopeNormal;
+	if (GetSkateSurfaceNormalAvg(SlopeNormal))
 	{
 		isAerial = false;
 
-	/*	
-	* OLD VERSION
-	*	FVector SlopeForce = SurfaceHit.Normal;
-	*	SlopeForce.Z *= -1;
-	*	Velocity += SkateGravityForce * SlopeForce * deltaTime;
-	*/
-
-		FVector SlopeNormal = SurfaceHit.Normal;
-		//SlopeNormal.Z *= -1;
 		// Calculate the parallel and perpendicular components of gravity
 		FVector GravityDirection = FVector::DownVector; // Assuming gravity acts straight down
 		FVector ParallelGravity = FVector::DotProduct(GravityDirection, SlopeNormal) * SlopeNormal;
@@ -69,8 +60,8 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 		// Calculate the sliding velocity based on the parallel acceleration and time
 		float SlidingTime = 10.0f; 
 		float SlidingVelocity = ParallelAcceleration * SlidingTime;
-
 		Velocity += SkateGravityForce * SlopeNormal * SlidingVelocity * deltaTime;
+
 		//gravity
 		Velocity += SkateGravityForce * FVector::DownVector * deltaTime;
 
@@ -128,10 +119,9 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	
 	//Rotate player to slope if grounded
 	FQuat NewRotation = UpdatedComponent->GetComponentRotation().Quaternion();
-	if (GetSkateSurface(SurfaceHit))
+	if (GetSkateSurfaceNormalAvg(SlopeNormal))
 	{
-		//Rotating here messes up constraining velocity
-		FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SurfaceHit.Normal, UpdatedComponent->GetForwardVector()).Rotator();
+		FRotator GroundAlignment = FRotationMatrix::MakeFromZX(SlopeNormal, UpdatedComponent->GetForwardVector()).Rotator();
 		NewRotation = FMath::RInterpTo(UpdatedComponent->GetComponentRotation(), GroundAlignment, deltaTime, SkateFloorAlignmentTime).Quaternion();
 	}
 
@@ -164,8 +154,42 @@ bool USkateCharacterMovementComponent::GetSkateSurface(FHitResult& Hit) const
 	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 1.5f * (-1 * CharacterOwner->GetActorUpVector());//FVector::DownVector;
 	FName ProfileName = TEXT("BlockAll");
 
-	DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, .1f, 0, 5);
-
+	//DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, .1f, 0, 5);
 
 	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, SkateCharacterOwner->GetIgnoreCharacterParams());
 }
+
+bool USkateCharacterMovementComponent::GetSkateSurfaceNormalAvg(FVector& normalAverage) const
+{
+	UCapsuleComponent* CharacterCapsule = CharacterOwner->GetCapsuleComponent(); // Replace with your character's capsule component reference
+	FVector ForwardVector = CharacterOwner->GetActorForwardVector();
+	FVector DownVector = CharacterOwner->GetActorUpVector();
+
+	// Calculate the start and end locations for the first line trace (front of the capsule)
+	FVector StartLocationFront = CharacterCapsule->GetComponentLocation() + (ForwardVector * CharacterCapsule->GetScaledCapsuleRadius());
+	FVector EndLocationFront = StartLocationFront - (DownVector * CharacterCapsule->GetScaledCapsuleHalfHeight() * 1.3f);
+	FHitResult FirstHitResult;
+	FCollisionQueryParams TraceParams(FName(TEXT("Trace")), true, nullptr);
+	
+//	DrawDebugLine(GetWorld(), StartLocationFront, EndLocationFront, FColor::Purple, false, .1f, 0, 5);
+	bool isFrontGrounded = GetWorld()->LineTraceSingleByChannel(FirstHitResult, StartLocationFront, EndLocationFront, ECC_Visibility, TraceParams);
+
+	// Calculate the start and end locations for the second line trace (back of the capsule)
+	FVector StartLocationBack = CharacterCapsule->GetComponentLocation() - (ForwardVector * CharacterCapsule->GetScaledCapsuleRadius());
+	FVector EndLocationBack = StartLocationBack - (DownVector * CharacterCapsule->GetScaledCapsuleHalfHeight() * 1.3f);
+	FHitResult SecondHitResult;
+//	DrawDebugLine(GetWorld(), StartLocationBack, EndLocationBack, FColor::Purple, false, .1f, 0, 5);
+	bool isBackGrounded = GetWorld()->LineTraceSingleByChannel(SecondHitResult, StartLocationBack, EndLocationBack, ECC_Visibility, TraceParams);
+
+	// Calculate the average normal vector
+	FVector AverageNormal = (FirstHitResult.Normal + SecondHitResult.Normal).GetSafeNormal();
+
+	if (!isBackGrounded && !isFrontGrounded)
+	{
+		return false;
+	}
+
+	normalAverage = AverageNormal;
+	return true;
+}
+
