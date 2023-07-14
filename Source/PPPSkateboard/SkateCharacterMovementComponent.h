@@ -25,10 +25,10 @@ class PPPSKATEBOARD_API USkateCharacterMovementComponent : public UCharacterMove
 	GENERATED_BODY()
 
 	//Parameters
-	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateGravityForce = 4000.f;
+	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateGravityForce = 1000.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Skating") float AerialGravityForce = 4000.f;
 	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateFriction = 1.5f;
-	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateFloorAlignmentTime = .5f;
+	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SkateFloorAlignmentTime = .05f;
 	UPROPERTY(EditDefaultsOnly, Category = "Skating") float SidewaysWheelSlide = .1f;
 
 	// Transient

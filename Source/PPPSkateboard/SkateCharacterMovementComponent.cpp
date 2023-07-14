@@ -51,9 +51,28 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 	{
 		isAerial = false;
 
-		FVector SlopeForce = SurfaceHit.Normal;
-		SlopeForce.Z *= -1;
-		Velocity += SkateGravityForce * SlopeForce * deltaTime;
+	/*	
+	* OLD VERSION
+	*	FVector SlopeForce = SurfaceHit.Normal;
+	*	SlopeForce.Z *= -1;
+	*	Velocity += SkateGravityForce * SlopeForce * deltaTime;
+	*/
+
+		FVector SlopeNormal = SurfaceHit.Normal;
+		//SlopeNormal.Z *= -1;
+		// Calculate the parallel and perpendicular components of gravity
+		FVector GravityDirection = FVector::DownVector; // Assuming gravity acts straight down
+		FVector ParallelGravity = FVector::DotProduct(GravityDirection, SlopeNormal) * SlopeNormal;
+		FVector PerpendicularGravity = GravityDirection - ParallelGravity;
+		// Calculate the parallel acceleration using the magnitude of the parallel gravity force
+		float ParallelAcceleration = ParallelGravity.Size() / Mass;
+		// Calculate the sliding velocity based on the parallel acceleration and time
+		float SlidingTime = 10.0f; 
+		float SlidingVelocity = ParallelAcceleration * SlidingTime;
+
+		Velocity += SkateGravityForce * SlopeNormal * SlidingVelocity * deltaTime;
+		//gravity
+		Velocity += SkateGravityForce * FVector::DownVector * deltaTime;
 
 		//turning
 		if (FMath::Abs(FVector::DotProduct(Acceleration.GetSafeNormal(), UpdatedComponent->GetRightVector())) > .1)
@@ -142,8 +161,11 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 bool USkateCharacterMovementComponent::GetSkateSurface(FHitResult& Hit) const
 {
 	FVector Start = UpdatedComponent->GetComponentLocation();
-	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 2.f * (-1 * CharacterOwner->GetActorUpVector());//FVector::DownVector;
+	FVector End = Start + CharacterOwner->GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 1.5f * (-1 * CharacterOwner->GetActorUpVector());//FVector::DownVector;
 	FName ProfileName = TEXT("BlockAll");
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Purple, false, .1f, 0, 5);
+
 
 	return GetWorld()->LineTraceSingleByProfile(Hit, Start, End, ProfileName, SkateCharacterOwner->GetIgnoreCharacterParams());
 }
