@@ -20,6 +20,9 @@ class PPPSKATEBOARD_API ASkateCharacter : public ACharacter
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Tricks, meta = (AllowPrivateAccess = "true"))
 		class USkeletalMeshComponent* SkateboardMesh;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Tricks, meta = (AllowPrivateAccess = "true"))
+		class UCapsuleComponent* SkateboardCapsuleCheck;
+
 	/** Camera boom positioning the camera behind the character */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* CameraBoom;
@@ -94,6 +97,8 @@ protected:
 	/// </summary>
 	void CheckCrash();
 
+	void Grind();
+
 	void CrashTimer();
 
 	void TrickDisplayTimer();
@@ -112,6 +117,16 @@ protected:
 		FVector NormalImpulse,
 		const FHitResult& Hit
 	);
+
+	UFUNCTION(BlueprintNativeEvent)
+		void OnOverlapCheckGrind(
+			UPrimitiveComponent* OverlappedComp, 
+			AActor* OtherActor,
+			UPrimitiveComponent* OtherComp, 
+			int32 OtherBodyIndex, 
+			bool bFromSweep,
+			const FHitResult& SweepResult
+		);
 
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -146,8 +161,24 @@ private:
 
 	float _aerialAdjustTime{ 0 };
 	FVector _previousVelocity{};
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Spin/Flip", meta = (AllowPrivateAccess = "true")) 
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "SkateSubstate", meta = (AllowPrivateAccess = "true")) 
 		bool _wasAerial {false};
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SkateSubstate", meta = (AllowPrivateAccess = "true"))
+		bool _isGrinding{ false };
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		float RailHeightOffset{ };
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		float DistanceAlongRail{ };
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		float RailDirectionScalar{ false }; //Which way we move along the spline
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		class USplineComponent* currentRail;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		float GrindingSpeed{ 100.f };
+
 	bool _isCrash{ false };
 
 	FTimerHandle _crashTimer;

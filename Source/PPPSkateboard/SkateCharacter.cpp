@@ -11,6 +11,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SplineComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 
@@ -55,6 +56,10 @@ ASkateCharacter::ASkateCharacter(const FObjectInitializer& ObjectInitializer) : 
 
 	SkateboardMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkateboardMesh"));
 	SkateboardMesh->SetupAttachment(RootComponent);
+
+	SkateboardCapsuleCheck = CreateDefaultSubobject<UCapsuleComponent>(TEXT("SkateboardCapsuleForCheckingGrinds"));
+	SkateboardCapsuleCheck->SetupAttachment(SkateboardMesh);
+	SkateboardCapsuleCheck->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 }
 
 
@@ -78,6 +83,9 @@ void ASkateCharacter::BeginPlay()
 	//Setup collision delegate
 	GetCapsuleComponent()->OnComponentHit.AddDynamic(this, &ASkateCharacter::OnCapsuleComponentHit);
 
+	//Checkoverlapping for grinding
+	SkateboardCapsuleCheck->OnComponentBeginOverlap.AddDynamic(this, &ASkateCharacter::OnOverlapCheckGrind);
+
 
 	//Delegate for Flicking Flatground Tricks
 	TrickSystem->OnTrickFlicked.AddUObject(this, &ASkateCharacter::HandleTrickSystemFlick);
@@ -88,10 +96,18 @@ void ASkateCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	Spin(_movementVector);
-	Flip(_movementVector);
-	AdjustAerialRotation();
-	CheckCrash();
+	if (!_isGrinding)
+	{
+		Spin(_movementVector);
+		Flip(_movementVector);
+		AdjustAerialRotation();
+		CheckCrash();
+	}
+
+	if (_isGrinding)
+	{
+		Grind();
+	}
 
 }
 
@@ -290,6 +306,7 @@ void ASkateCharacter::CheckCrash()
 	_wasAerial = Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial;
 }
 
+
 void ASkateCharacter::CrashTimer()
 {
 	GetMesh()->SetSimulatePhysics(false);
@@ -312,7 +329,17 @@ void ASkateCharacter::TrickDisplayTimer()
 
 void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 {
-	GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
+	if (!_wasAerial) // Cant jump mid air , but u can still do a trick!
+	{
+		GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
+	}
+
+	if (_isGrinding) // Can input a direction to jump off of grind as well
+	{
+		GetCharacterMovement()->AddImpulse(FVector(_movementVector.X, _movementVector.Y, 0) * Trick.JumpHeight, true);
+		_isGrinding = false;
+	}
+
 	GetMesh()->GetAnimInstance()->Montage_Play(Trick.PlayerMontage);
 	SkateboardMesh->GetAnimInstance()->Montage_Play(Trick.BoardMontage);
 	
@@ -341,6 +368,16 @@ void ASkateCharacter::Grab()
 	_isGrabbing = !_isGrabbing;
 }
 
+void ASkateCharacter::Grind()
+{
+	FVector newPosition = currentRail->GetLocationAtDistanceAlongSpline(DistanceAlongRail, ESplineCoordinateSpace::World);
+	newPosition.Z += RailHeightOffset;
+	newPosition.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+
+	DistanceAlongRail += GetWorld()->DeltaTimeSeconds * GrindingSpeed * RailDirectionScalar;
+	SetActorLocation(newPosition);
+}
+
 void ASkateCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	//If capsule component is hit and we are still in an aerial then that means we landed upside down
@@ -349,3 +386,9 @@ void ASkateCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, A
 		Crash();
 	}
 }
+
+void ASkateCharacter::OnOverlapCheckGrind_Implementation(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	// Default implementation for C++, left empty so implementation is done in blueprint
+}
+
