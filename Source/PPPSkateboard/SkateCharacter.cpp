@@ -329,14 +329,18 @@ void ASkateCharacter::TrickDisplayTimer()
 
 void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 {
-	if (!_wasAerial) // Cant jump mid air , but u can still do a trick!
+	if (!_wasAerial || _isGrinding) // Cant jump mid air , but u can still do a trick!
 	{
 		GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
 	}
 
 	if (_isGrinding) // Can input a direction to jump off of grind as well
 	{
-		GetCharacterMovement()->AddImpulse(FVector(_movementVector.X, _movementVector.Y, 0) * Trick.JumpHeight, true);
+		FVector CameraForward = FollowCamera->GetForwardVector();
+		FVector CameraRight = FollowCamera->GetRightVector();
+		FVector Direction = (CameraForward * _movementVector.Y + CameraRight * _movementVector.X).GetSafeNormal();
+
+		GetCharacterMovement()->AddImpulse(Direction * GrindDirectionJumpInfluence, true);
 		_isGrinding = false;
 	}
 
@@ -375,15 +379,33 @@ void ASkateCharacter::Grind()
 	newPosition.Z += GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 
 	DistanceAlongRail += GetWorld()->DeltaTimeSeconds * GrindingSpeed * RailDirectionScalar;
+	
 	SetActorLocation(newPosition);
+	
+	if (DistanceAlongRail < 0)
+	{
+		_isGrinding = false;
+		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * -200.f, true);
+
+	}
+	else if (DistanceAlongRail > currentRail->GetSplineLength())
+	{
+		_isGrinding = false;
+		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * 200.f, true);
+
+	}
+
 }
 
 void ASkateCharacter::OnCapsuleComponentHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	//If capsule component is hit and we are still in an aerial then that means we landed upside down
-	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial)
+	if (Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial && !_isGrinding)
 	{
-		Crash();
+		if (!(currentRail && currentRail->GetOwner() == OtherActor))
+		{
+			Crash();
+		}
 	}
 }
 

@@ -177,7 +177,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
 		class USplineComponent* currentRail;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
-		float GrindingSpeed{ 100.f };
+		float GrindingSpeed{ 400.f };
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		float GrindDirectionJumpInfluence{ 400.f }; //based on user left analog stick input on a trick we will push the skater in that direction
 
 	bool _isCrash{ false };
 
