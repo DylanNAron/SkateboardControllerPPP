@@ -179,6 +179,8 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
 		float GrindingSpeed{ 400.f };
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
+		float GrindingSlopeFactor{ 5.f }; // adjust this value to increase or decrease how much a rails slope affects the grinding speed
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
 		float GrindDirectionJumpInfluence{ 400.f }; //based on user left analog stick input on a trick we will push the skater in that direction
 
 	bool _isCrash{ false };

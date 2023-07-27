@@ -392,8 +392,13 @@ void ASkateCharacter::Grind()
 	{
 		_isGrinding = false;
 		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * 200.f, true);
-
 	}
+
+	
+	//Changing grinding speed based on rail slope
+	FVector SplineTangent = currentRail->GetTangentAtDistanceAlongSpline(DistanceAlongRail, ESplineCoordinateSpace::World);
+	float Slope = SplineTangent.Z / SplineTangent.Size();
+	GrindingSpeed += Slope * -RailDirectionScalar;
 
 }
 

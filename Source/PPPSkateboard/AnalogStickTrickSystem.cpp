@@ -139,7 +139,7 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 
 	//**********DEBUG PRINTING********************
 	//UEnum* EnumPtr = FindObject<UEnum>(ANY_PACKAGE, TEXT("EMyEnum"), true);
-	FString EnumString;
+	/*FString EnumString;
 	for (int32 Index = 0; Index < currentCombo.Num(); ++Index)
 	{
 		ESection EnumValue = currentCombo[Index];
@@ -151,7 +151,7 @@ void UAnalogStickTrickSystem::TickComponent(float DeltaTime, ELevelTick TickType
 		EnumString += EnumName;
 	}
 	FString DebugMessage = FString::Printf(TEXT("CurrentCombo: %s"), *EnumString);
-	GEngine->AddOnScreenDebugMessage(-1, .001f, FColor::Magenta, DebugMessage);
+	GEngine->AddOnScreenDebugMessage(-1, .001f, FColor::Magenta, DebugMessage);*/
 	//**********DEBUG PRINTING********************
 
 }
