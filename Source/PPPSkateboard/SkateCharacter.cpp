@@ -331,7 +331,8 @@ void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 {
 	if (!_wasAerial || _isGrinding) // Cant jump mid air , but u can still do a trick!
 	{
-		GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
+		//GetCharacterMovement()->AddImpulse(GetActorUpVector() * Trick.JumpHeight, true);
+		GetCharacterMovement()->AddImpulse(FVector::UpVector * Trick.JumpHeight, true);
 	}
 
 	if (_isGrinding) // Can input a direction to jump off of grind as well
@@ -381,7 +382,8 @@ void ASkateCharacter::Grind()
 	DistanceAlongRail += GetWorld()->DeltaTimeSeconds * GrindingSpeed * RailDirectionScalar;
 	
 	SetActorLocation(newPosition);
-	
+	GetCharacterMovement()->Velocity = FVector(0);
+
 	if (DistanceAlongRail < 0)
 	{
 		_isGrinding = false;
