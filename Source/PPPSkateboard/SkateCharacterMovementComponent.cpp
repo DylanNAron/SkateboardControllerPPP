@@ -167,7 +167,7 @@ bool USkateCharacterMovementComponent::GetSkateSurfaceNormalAvg(FVector& normalA
 
 	// Calculate the start and end locations for the first line trace (front of the capsule)
 	FVector StartLocationFront = CharacterCapsule->GetComponentLocation() + (ForwardVector * CharacterCapsule->GetScaledCapsuleRadius());
-	FVector EndLocationFront = StartLocationFront - (DownVector * CharacterCapsule->GetScaledCapsuleHalfHeight() * 1.3f);
+	FVector EndLocationFront = StartLocationFront - (DownVector * CharacterCapsule->GetScaledCapsuleHalfHeight() * 1.5f);
 	FHitResult FirstHitResult;
 	FCollisionQueryParams TraceParams(FName(TEXT("Trace")), true, nullptr);
 	
@@ -176,7 +176,7 @@ bool USkateCharacterMovementComponent::GetSkateSurfaceNormalAvg(FVector& normalA
 
 	// Calculate the start and end locations for the second line trace (back of the capsule)
 	FVector StartLocationBack = CharacterCapsule->GetComponentLocation() - (ForwardVector * CharacterCapsule->GetScaledCapsuleRadius());
-	FVector EndLocationBack = StartLocationBack - (DownVector * CharacterCapsule->GetScaledCapsuleHalfHeight() * 1.3f);
+	FVector EndLocationBack = StartLocationBack - (DownVector * CharacterCapsule->GetScaledCapsuleHalfHeight() * 1.5f);
 	FHitResult SecondHitResult;
 //	DrawDebugLine(GetWorld(), StartLocationBack, EndLocationBack, FColor::Purple, false, .1f, 0, 5);
 	bool isBackGrounded = GetWorld()->LineTraceSingleByChannel(SecondHitResult, StartLocationBack, EndLocationBack, ECC_Visibility, TraceParams);

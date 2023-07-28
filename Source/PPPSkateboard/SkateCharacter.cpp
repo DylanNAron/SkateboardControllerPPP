@@ -337,12 +337,16 @@ void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 
 	if (_isGrinding) // Can input a direction to jump off of grind as well
 	{
+		FVector SpeedFromRailGrind = currentRail->GetForwardVector() * GrindingSpeed * RailDirectionScalar;
+		GetCharacterMovement()->Velocity = SpeedFromRailGrind;
+		_previousVelocity = SpeedFromRailGrind;
+
 		FVector CameraForward = FollowCamera->GetForwardVector();
 		FVector CameraRight = FollowCamera->GetRightVector();
 		FVector Direction = (CameraForward * _movementVector.Y + CameraRight * _movementVector.X).GetSafeNormal();
-
 		GetCharacterMovement()->AddImpulse(Direction * GrindDirectionJumpInfluence, true);
 		_isGrinding = false;
+
 	}
 
 	GetMesh()->GetAnimInstance()->Montage_Play(Trick.PlayerMontage);
@@ -382,17 +386,24 @@ void ASkateCharacter::Grind()
 	DistanceAlongRail += GetWorld()->DeltaTimeSeconds * GrindingSpeed * RailDirectionScalar;
 	
 	SetActorLocation(newPosition);
+	SetActorRotation(currentRail->GetRotationAtDistanceAlongSpline(DistanceAlongRail, ESplineCoordinateSpace::World));
 	GetCharacterMovement()->Velocity = FVector(0);
 
 	if (DistanceAlongRail < 0)
 	{
 		_isGrinding = false;
+		FVector SpeedFromRailGrind = currentRail->GetForwardVector() * GrindingSpeed * RailDirectionScalar;
+		GetCharacterMovement()->Velocity = SpeedFromRailGrind;
+		_previousVelocity = SpeedFromRailGrind;
 		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * -200.f, true);
 
 	}
 	else if (DistanceAlongRail > currentRail->GetSplineLength())
 	{
 		_isGrinding = false;
+		FVector SpeedFromRailGrind = currentRail->GetForwardVector() * GrindingSpeed * RailDirectionScalar;
+		GetCharacterMovement()->Velocity = SpeedFromRailGrind;
+		_previousVelocity = SpeedFromRailGrind;
 		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * 200.f, true);
 	}
 
@@ -400,7 +411,7 @@ void ASkateCharacter::Grind()
 	//Changing grinding speed based on rail slope
 	FVector SplineTangent = currentRail->GetTangentAtDistanceAlongSpline(DistanceAlongRail, ESplineCoordinateSpace::World);
 	float Slope = SplineTangent.Z / SplineTangent.Size();
-	GrindingSpeed += Slope * -RailDirectionScalar;
+	GrindingSpeed += Slope * -RailDirectionScalar * GrindingSlopeFactor;
 
 }
 
