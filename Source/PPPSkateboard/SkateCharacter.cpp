@@ -278,7 +278,7 @@ void ASkateCharacter::CheckCrash()
 {
 
 	//On land
-	if(_wasAerial && !Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial && !_isCrash)
+	if(_wasAerial && !Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial && !_isCrash && !_wasGrinding)
 	{
 		//Check if we land sideways (greater than given angle to fall off board)
 		FVector CurrentVelocity = GetMovementComponent()->Velocity;
@@ -304,6 +304,7 @@ void ASkateCharacter::CheckCrash()
 
 	_previousVelocity = GetMovementComponent()->Velocity;
 	_wasAerial = Cast<USkateCharacterMovementComponent>(GetCharacterMovement())->isAerial;
+	_wasGrinding = false;
 }
 
 
@@ -337,17 +338,23 @@ void ASkateCharacter::HandleTrickSystemFlick(FTrickComboStruct Trick)
 
 	if (_isGrinding) // Can input a direction to jump off of grind as well
 	{
-		FVector SpeedFromRailGrind = currentRail->GetForwardVector() * GrindingSpeed * RailDirectionScalar;
+		_isGrinding = false;
+		_wasGrinding = true;
+
+		FVector RailDirection = currentRail->GetDirectionAtDistanceAlongSpline(DistanceAlongRail, ESplineCoordinateSpace::World);
+		FVector SpeedFromRailGrind = RailDirection * GrindingSpeed * RailDirectionScalar;
 		GetCharacterMovement()->Velocity = SpeedFromRailGrind;
-		_previousVelocity = SpeedFromRailGrind;
 
 		FVector CameraForward = FollowCamera->GetForwardVector();
 		FVector CameraRight = FollowCamera->GetRightVector();
 		FVector Direction = (CameraForward * _movementVector.Y + CameraRight * _movementVector.X).GetSafeNormal();
 		GetCharacterMovement()->AddImpulse(Direction * GrindDirectionJumpInfluence, true);
-		_isGrinding = false;
+
+
+		_previousVelocity = GetCharacterMovement()->Velocity;
 
 	}
+
 
 	GetMesh()->GetAnimInstance()->Montage_Play(Trick.PlayerMontage);
 	SkateboardMesh->GetAnimInstance()->Montage_Play(Trick.BoardMontage);
@@ -392,7 +399,8 @@ void ASkateCharacter::Grind()
 	if (DistanceAlongRail < 0)
 	{
 		_isGrinding = false;
-		FVector SpeedFromRailGrind = currentRail->GetForwardVector() * GrindingSpeed * RailDirectionScalar;
+		FVector RailDirection = currentRail->GetDirectionAtDistanceAlongSpline(0, ESplineCoordinateSpace::World);
+		FVector SpeedFromRailGrind = RailDirection * GrindingSpeed * RailDirectionScalar;
 		GetCharacterMovement()->Velocity = SpeedFromRailGrind;
 		_previousVelocity = SpeedFromRailGrind;
 		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * -200.f, true);
@@ -401,7 +409,8 @@ void ASkateCharacter::Grind()
 	else if (DistanceAlongRail > currentRail->GetSplineLength())
 	{
 		_isGrinding = false;
-		FVector SpeedFromRailGrind = currentRail->GetForwardVector() * GrindingSpeed * RailDirectionScalar;
+		FVector RailDirection = currentRail->GetDirectionAtDistanceAlongSpline(currentRail->GetSplineLength(), ESplineCoordinateSpace::World);
+		FVector SpeedFromRailGrind = RailDirection * GrindingSpeed * RailDirectionScalar;
 		GetCharacterMovement()->Velocity = SpeedFromRailGrind;
 		_previousVelocity = SpeedFromRailGrind;
 		GetCharacterMovement()->AddImpulse(currentRail->GetForwardVector() * 200.f, true);

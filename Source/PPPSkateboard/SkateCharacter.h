@@ -167,6 +167,7 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "SkateSubstate", meta = (AllowPrivateAccess = "true"))
 		bool _isGrinding{ false };
+	bool _wasGrinding{ false };
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Grinding", meta = (AllowPrivateAccess = "true"))
 		float RailHeightOffset{ };
