@@ -8,3 +8,5 @@ Custom Skateboard Character in Unreal Engine for a Personal Programming Project.
 ![SkateFlickTricks](https://github.com/DylanNAron/SkateboardControllerPPP/blob/main/SkateFlip.gif)
 
 
+To Read more about this check out my blogs!
+[Skateboard Controller PPP Blogs](https://dylannaron.github.io/#blogs)
