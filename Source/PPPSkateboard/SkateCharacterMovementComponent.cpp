@@ -52,9 +52,9 @@ void USkateCharacterMovementComponent::PhysSkate(float deltaTime, int32 Iteratio
 		isAerial = false;
 
 		// Calculate the parallel and perpendicular components of gravity
-		FVector GravityDirection = FVector::DownVector; // Assuming gravity acts straight down
-		FVector ParallelGravity = FVector::DotProduct(GravityDirection, SlopeNormal) * SlopeNormal;
-		FVector PerpendicularGravity = GravityDirection - ParallelGravity;
+		FVector gravityDirection = FVector::DownVector; // Assuming gravity acts straight down
+		FVector ParallelGravity = FVector::DotProduct(gravityDirection, SlopeNormal) * SlopeNormal;
+		FVector PerpendicularGravity = gravityDirection - ParallelGravity;
 		// Calculate the parallel acceleration using the magnitude of the parallel gravity force
 		float ParallelAcceleration = ParallelGravity.Size() / Mass;
 		// Calculate the sliding velocity based on the parallel acceleration and time

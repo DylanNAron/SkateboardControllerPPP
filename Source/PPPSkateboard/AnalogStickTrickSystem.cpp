@@ -2,6 +2,8 @@
 
 #include "AnalogStickTrickSystem.h"
 
+#include "cmath"
+
 // Sets default values for this component's properties
 UAnalogStickTrickSystem::UAnalogStickTrickSystem()
 {

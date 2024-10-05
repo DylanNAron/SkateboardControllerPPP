@@ -8,8 +8,8 @@ public class PPPSkateboardEditorTarget : TargetRules
 	public PPPSkateboardEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
-		ExtraModuleNames.Add("PPPSkateboard");
-	}
+		DefaultBuildSettings = BuildSettingsVersion.V5;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
+        ExtraModuleNames.AddRange(new string[] { "PPPSkateboard" });
+    }
 }
