@@ -3,16 +3,16 @@ Custom Skateboard Character in Unreal Engine for a Personal Programming Project.
 
 [Demo Video](https://youtu.be/kybtRQHAj00?si=zth4hKPkkCne1Pkr)
 
-## Code Organization
-SkateCharacter.cpp  
-├── SkateCharacterMovementComponent.cpp  
-└── AnalogStickTrickSystem.cpp
-
 ## Analog Flick Trick System
 ![Analog Flick Trick System in Action](https://github.com/DylanNAron/SkateboardControllerPPP/blob/main/SkateFlick.gif)
 
 ## Aerial Spinning/Flipping
 ![Aerial Spinning and Flipping Demonstration](https://github.com/DylanNAron/SkateboardControllerPPP/blob/main/SkateFlip.gif)
+
+## Code Organization
+SkateCharacter.cpp  
+├── SkateCharacterMovementComponent.cpp  
+└── AnalogStickTrickSystem.cpp
 
 To easily add new skate flick tricks, tweak movement values, or even just update visuals, these can be done in the `BP_MySkateCharacter` Blueprint.
 
